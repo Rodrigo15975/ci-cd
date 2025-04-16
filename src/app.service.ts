@@ -17,4 +17,18 @@ export class AppService {
       },
     )
   }
+  async create(data: { email: string; name: string; description: string }) {
+    Logger.debug('Message send')
+    return await this.amqpConnection.publish(
+      'user-exchange',
+      'user.created',
+      {
+        message: 'Desde api-gateway',
+        data,
+      },
+      {
+        expiration: 5000,
+      },
+    )
+  }
 }
