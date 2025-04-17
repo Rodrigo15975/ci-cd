@@ -41,7 +41,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+          aws-region: ${{secrets.AWS_REGION}}
 
       # Step 6: Log in to Amazon ECR
       - name: 🔑 Log in to Amazon ECR
@@ -57,7 +57,7 @@ jobs:
         run: |
 
           # Usa el SHA del commit para el tag
-          VERSION=$(git rev-parse --short HEAD)
+          VERSION=$(git describe --tags --abbrev=0)
           echo "🚧 Construyendo imagen Docker con commit SHA $VERSION..."
 
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$VERSION .
@@ -67,23 +67,21 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$VERSION
           # ↑ Subes la imagen con el tag basado en el commit SHA
 
-
-
           echo "✅ Imagen construida y subida a ECR."
 
-        # 8. Update kubeconfig for EKS
-      - name: Update kubeconfig
-        run: |
-          echo "🚀 Actualizando kubeconfig..."
-          aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }}
+      #   # 8. Update kubeconfig for EKS
+      # - name: Update kubeconfig
+      #   run: |
+      #     echo "🚀 Actualizando kubeconfig..."
+      #     aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }}
 
-        # 9. Update Deployment in EKS (only image)
-      - name: Update image in EKS Deployment
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
-          IMAGE_TAG: ${{ github.sha }}
-        run: |
-          echo "🚀 Actualizando imagen del deployment..."
-          kubectl set image deployment/${{ secrets.K8S_DEPLOYMENT_NAME }} \
-            ${{ secrets.K8S_CONTAINER_NAME }}=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+      #   # 9. Update Deployment in EKS (only image)
+      # - name: Update image in EKS Deployment
+      #   env:
+      #     ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+      #     ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+      #     IMAGE_TAG: ${{ github.sha }}
+      #   run: |
+      #     echo "🚀 Actualizando imagen del deployment..."
+      #     kubectl set image deployment/${{ secrets.K8S_DEPLOYMENT_NAME }} \
+      #       ${{ secrets.K8S_CONTAINER_NAME }}=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
