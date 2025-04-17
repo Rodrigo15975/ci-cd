@@ -5,7 +5,7 @@ on:
     branches: ['master']
 
 permissions:
-  contents: write
+  contents: write # ← Esto es necesario para poder hacer git push(obtener versionado opcinal)
 
 jobs:
   build-and-push:
@@ -45,6 +45,10 @@ jobs:
 
           echo "version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
 
+      - name: Set short git commit SHA
+        id: commit
+        uses: prompt/actions-commit-hash@v2
+
       # Step 2: Set up Node.js
       - name: ⚙️ Set up Node.js
         uses: actions/setup-node@v4
@@ -81,9 +85,10 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }} # ← URL de tu repositorio ECR, por ejemplo: 222634373780.dkr.ecr.us-east-1.amazonaws.com
           ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }} # ← Nombre del repositorio en ECR, por ejemplo: api-gateway
-          IMAGE_TAG: ${{ github.sha }} # ← Usamos el SHA del commit como tag de la imagen
+          IMAGE_TAG: ${{ steps.commit.outputs.short }} imagen
           VERSION: ${{ steps.semver.outputs.version }}
         run: |
+          echo "🚧 Value tag: $IMAGE_TAG"
           echo "🚧 Construyendo imagen Docker con versión: $VERSION"
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$VERSION .
 
