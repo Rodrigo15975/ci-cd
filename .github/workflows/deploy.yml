@@ -16,6 +16,31 @@ jobs:
       # Step 1: Checkout code
       - name: 🧾 Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🏷️ Obtener y generar nueva versión
+        id: semver
+        run: |
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "Último tag encontrado: $LAST_TAG"
+
+          # Extrae versión semántica
+          VERSION=$(echo "$LAST_TAG" | sed 's/v//')
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+
+          # Aumentamos el PATCH automáticamente
+          PATCH=$((PATCH + 1))
+          NEW_VERSION="v$MAJOR.$MINOR.$PATCH"
+
+          echo "Nueva versión: $NEW_VERSION"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag $NEW_VERSION
+          git push origin $NEW_VERSION
+
+          echo "version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
 
       # Step 2: Set up Node.js
       - name: ⚙️ Set up Node.js
@@ -51,21 +76,20 @@ jobs:
       # Step 7: Build, tag, and push Docker image to ECR
       - name: 🚀 Build, tag, and push image to Amazon ECR
         env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
-          IMAGE_TAG: ${{ github.sha }}
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }} # ← URL de tu repositorio ECR, por ejemplo: 222634373780.dkr.ecr.us-east-1.amazonaws.com
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }} # ← Nombre del repositorio en ECR, por ejemplo: api-gateway
+          IMAGE_TAG: ${{ github.sha }} # ← Usamos el SHA del commit como tag de la imagen
+          VERSION: ${{ steps.semver.outputs.version }}
         run: |
-
-          # Usa el SHA del commit para el tag
-          VERSION=$(git describe --tags --abbrev=0)
-          echo "🚧 Construyendo imagen Docker con commit SHA $VERSION..."
-
+          echo "🚧 Construyendo imagen Docker con versión: $VERSION"
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$VERSION .
-          # ↑ Usa el SHA del commit como el tag de la imagen Docker
 
-          echo "📦 Pusheando imagen a ECR con commit SHA $VERSION..."
+          echo "📤 Subiendo imagen: $VERSION"
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$VERSION
-          # ↑ Subes la imagen con el tag basado en el commit SHA
+
+          echo "🏷️ Etiquetando como latest"
+          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$VERSION $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
 
           echo "✅ Imagen construida y subida a ECR."
 
