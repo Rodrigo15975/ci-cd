@@ -6,7 +6,7 @@ export class AppService {
   constructor(private readonly amqpConnection: AmqpConnection) {}
   async getHello() {
     Logger.debug('Message send')
-    return await this.amqpConnection.publish(
+    await this.amqpConnection.publish(
       'user-exchange',
       'user.created',
       {
@@ -16,6 +16,9 @@ export class AppService {
         expiration: 5000,
       },
     )
+    return {
+      message: 'ok',
+    }
   }
   async create(data: { email: string; name: string; description: string }) {
     Logger.debug('Message send')
