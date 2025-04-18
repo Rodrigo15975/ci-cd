@@ -122,3 +122,10 @@ jobs:
             ${{ secrets.K8S_CONTAINER_NAME }}=$ECR_REGISTRY/$ECR_REPOSITORY:$VERSION \
             --namespace=${{ secrets.K8S_NAMESPACE }}
           echo "✅ Deployment actualizado en Kubernetes."
+
+          # 10. Verificar si el deployment fue exitoso
+      - name: ✅ Verificar rollout del deployment
+        run: |
+          echo "🔍 Verificando que el deployment se haya aplicado correctamente..."
+          kubectl rollout status deployment/${{ secrets.K8S_DEPLOYMENT_NAME }} --namespace=${{ secrets.K8S_NAMESPACE }}
+          echo "🎉 Rollout completado correctamente."
