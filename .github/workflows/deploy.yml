@@ -20,12 +20,11 @@ jobs:
       - name: 🧾 Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth:
-            0
+          fetch-depth: 0
 
-            # Step Format code
-      - name: 🎨 Format code
-        run: npm run format
+      # Step Format code
+      # - name: 🎨 Format code
+      #   run: npm run format
 
       # Step Lint code
       - name: 🔎 Lint code
