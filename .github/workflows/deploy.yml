@@ -116,14 +116,23 @@ jobs:
 
         # 9. Update deployment in EKS(Kubernetes)
       - name: 🚢 Actualizar deployment en Kubernetes con nueva imagen
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+          TAG_FINAL: ${{ steps.semver.outputs.version }}-${{ steps.commit.outputs.short }}
         run: |
-          echo "🔄 Actualizando deployment con nueva imagen: $VERSION"
+          echo "🔄 Actualizando deployment con nueva imagen: $TAG_FINAL"
+
+          echo "ECR_REGISTRY: $ECR_REGISTRY"
+          echo "ECR_REPOSITORY: $ECR_REPOSITORY"
+          echo "TAG_FINAL: $TAG_FINAL"
+
           kubectl set image deployment/${{ secrets.K8S_DEPLOYMENT_NAME }} \
-            ${{ secrets.K8S_CONTAINER_NAME }}=$ECR_REGISTRY/$ECR_REPOSITORY:$VERSION \
+            ${{ secrets.K8S_CONTAINER_NAME }}=$ECR_REGISTRY/$ECR_REPOSITORY:$TAG_FINAL \
             --namespace=${{ secrets.K8S_NAMESPACE }}
           echo "✅ Deployment actualizado en Kubernetes."
 
-          # 10. Verificar si el deployment fue exitoso
+        # 10. Verificar si el deployment fue exitoso
       - name: ✅ Verificar rollout del deployment
         run: |
           echo "🔍 Verificando que el deployment se haya aplicado correctamente..."
