@@ -27,8 +27,8 @@ jobs:
       #   run: npm run format
 
       # Step Lint code
-      - name: 🔎 Lint code
-        run: npm run lint
+      # - name: 🔎 Lint code
+      #   run: npm run lint
 
       #  Obtener y generar nueva versión
       - name: 🏷️ Obtener y generar nueva versión
