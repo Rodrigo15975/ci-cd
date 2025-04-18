@@ -21,7 +21,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
+      #  Obtener y generar nueva versión
       - name: 🏷️ Obtener y generar nueva versión
         id: semver
         run: |
@@ -45,6 +45,7 @@ jobs:
 
           echo "version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
 
+      # Obtener el commit short SHA(optinal- for versioning)
       - name: Set short git commit SHA
         id: commit
         uses: prompt/actions-commit-hash@v2
@@ -97,25 +98,16 @@ jobs:
           echo "✅ Imagen construida y subida a ECR."
 
         # 8. Update kubeconfig for EKS
-      # - name: Update kubeconfig
-      #   run: |
-      #     echo "🚀 Actualizando kubeconfig..."
-      #     aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }}
+      - name: Update kubeconfig
+        run: |
+          echo "🚀 Actualizando kubeconfig..."
+          aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }}
 
-      # - name: 🚢 Actualizar deployment en Kubernetes con nueva imagen
-      #   run: |
-      #     echo "🔄 Actualizando deployment con nueva imagen: $VERSION"
-      #     kubectl set image deployment/${{ secrets.K8S_DEPLOYMENT_NAME }} \
-      #       ${{ secrets.K8S_CONTAINER_NAME }}=$ECR_REGISTRY/$ECR_REPOSITORY:$VERSION \
-      #       --namespace=${{ secrets.K8S_NAMESPACE }}
-
-      #   # 9. Update Deployment in EKS (only image)
-      # - name: Update image in EKS Deployment
-      #   env:
-      #     ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-      #     ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
-      #     IMAGE_TAG: ${{ github.sha }}
-      #   run: |
-      #     echo "🚀 Actualizando imagen del deployment..."
-      #     kubectl set image deployment/${{ secrets.K8S_DEPLOYMENT_NAME }} \
-      #       ${{ secrets.K8S_CONTAINER_NAME }}=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        # 9. Update deployment in EKS(Kubernetes)
+      - name: 🚢 Actualizar deployment en Kubernetes con nueva imagen
+        run: |
+          echo "🔄 Actualizando deployment con nueva imagen: $VERSION"
+          kubectl set image deployment/${{ secrets.K8S_DEPLOYMENT_NAME }} \
+            ${{ secrets.K8S_CONTAINER_NAME }}=$ECR_REGISTRY/$ECR_REPOSITORY:$VERSION \
+            --namespace=${{ secrets.K8S_NAMESPACE }}
+          echo "✅ Deployment actualizado en Kubernetes."
