@@ -85,27 +85,29 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }} # ← URL de tu repositorio ECR, por ejemplo: 222634373780.dkr.ecr.us-east-1.amazonaws.com
           ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }} # ← Nombre del repositorio en ECR, por ejemplo: api-gateway
-          IMAGE_TAG: ${{ steps.commit.outputs.short }} imagen
+          SHORT_COMMIT: ${{ steps.commit.outputs.short }} imagen
           VERSION: ${{ steps.semver.outputs.version }}
         run: |
-          echo "🚧 Value tag: $IMAGE_TAG"
           echo "🚧 Construyendo imagen Docker con versión: $VERSION"
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$VERSION .
 
           echo "📤 Subiendo imagen: $VERSION"
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$VERSION
 
-          echo "🏷️ Etiquetando como latest"
-          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$VERSION $ECR_REGISTRY/$ECR_REPOSITORY:latest
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
-
           echo "✅ Imagen construida y subida a ECR."
 
-      #   # 8. Update kubeconfig for EKS
+        # 8. Update kubeconfig for EKS
       # - name: Update kubeconfig
       #   run: |
       #     echo "🚀 Actualizando kubeconfig..."
       #     aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }}
+
+      # - name: 🚢 Actualizar deployment en Kubernetes con nueva imagen
+      #   run: |
+      #     echo "🔄 Actualizando deployment con nueva imagen: $VERSION"
+      #     kubectl set image deployment/${{ secrets.K8S_DEPLOYMENT_NAME }} \
+      #       ${{ secrets.K8S_CONTAINER_NAME }}=$ECR_REGISTRY/$ECR_REPOSITORY:$VERSION \
+      #       --namespace=${{ secrets.K8S_NAMESPACE }}
 
       #   # 9. Update Deployment in EKS (only image)
       # - name: Update image in EKS Deployment
