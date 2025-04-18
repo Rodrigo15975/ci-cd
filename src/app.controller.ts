@@ -9,6 +9,7 @@ export class AppController {
   getHello() {
     return {
       message: 'modificado',
+      test: 1,
     }
   }
 
