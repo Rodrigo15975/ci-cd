@@ -18,6 +18,7 @@ export class AppService {
     )
     return {
       message: 'ok',
+      status: 200,
     }
   }
   async create(data: { email: string; name: string; description: string }) {
