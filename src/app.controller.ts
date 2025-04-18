@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common'
+import { Body, Controller, Get, HttpStatus, Post } from '@nestjs/common'
 import { AppService } from './app.service'
 
 @Controller()
@@ -9,7 +9,8 @@ export class AppController {
   getHello() {
     return {
       message: 'modificado',
-      test: 2,
+      test: 3,
+      status: HttpStatus.OK,
     }
   }
 
