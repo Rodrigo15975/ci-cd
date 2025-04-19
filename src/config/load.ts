@@ -38,3 +38,14 @@ export const LoadMountSecrets = () => {
 
   Logger.verbose({ secrets })
 }
+
+const injectSecretToEnv = (filename: string, envVar: string) => {
+  const fullPath = join(secretsPath, filename)
+  if (fs.existsSync(fullPath)) {
+    process.env[envVar] = fs.readFileSync(fullPath, 'utf8').trim()
+  }
+}
+
+injectSecretToEnv('db-username', 'DB_USERNAME')
+injectSecretToEnv('db-password', 'DB_PASSWORD')
+injectSecretToEnv('rabbit_uri', 'RABBITMQ_URL')
