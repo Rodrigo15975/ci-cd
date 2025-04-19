@@ -9,7 +9,7 @@ async function bootstrap() {
   await app.listen(process.env.PORT ?? 4000)
   // Leer secretos montados por el CSI Driver
   const secretsPath = '/mnt/secrets-store'
-  const dbUser = fs.readFileSync(join(secretsPath, 'db-user'), 'utf8')
+  const dbUser = fs.readFileSync(join(secretsPath, 'db-username'), 'utf8')
   const dbPassword = fs.readFileSync(join(secretsPath, 'db-password'), 'utf8')
 
   Logger.verbose(`Database User: ${dbUser}`) // Imprime: admin
