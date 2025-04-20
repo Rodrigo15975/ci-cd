@@ -1,13 +1,24 @@
 import { Logger } from '@nestjs/common'
 import { NestFactory } from '@nestjs/core'
 import { AppModule } from './app.module'
-import { LoadMountSecrets } from './config/load'
-import './config/secrets'
-
+import { LoadSecrets } from './config/load'
+import './config/load'
+LoadSecrets()
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
-  await app.listen(process.env.PORT ?? 4000)
-  LoadMountSecrets()
-  Logger.debug(`API Gateway running on port ${process.env.PORT ?? 4000}`)
+  const logger = new Logger('Bootstrap')
+  app.useLogger(
+    process.env.NODE_ENV === 'development'
+      ? ['debug', 'log', 'error', 'warn', 'verbose']
+      : ['error', 'warn', 'log'],
+  )
+
+  await app.listen(4000, () => {
+    if (process.env.NODE_ENV === 'development')
+      return logger.debug(
+        `Development on port 4000 MODE: ${process.env.NODE_ENV}`,
+      )
+    logger.log(`Production on port 4000 MODE: ${process.env.NODE_ENV}`)
+  })
 }
-bootstrap()
+void bootstrap()
