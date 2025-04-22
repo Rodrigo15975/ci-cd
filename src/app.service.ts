@@ -66,7 +66,7 @@ export class AppService {
       },
     )
     return {
-      message: 'ok',
+      message: 'Message importan',
       status: 200,
     }
   }
