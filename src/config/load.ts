@@ -22,7 +22,7 @@ export const LoadSecrets = () => {
       'No se encontraron algunos secretos montados, usando valores por defecto o variables de entorno.',
     )
 
-  logger.log('Secrets loaded successfully.', { secrets })
+  logger.log('Secrets loaded successfully.', { secrets, missingSecrets })
 }
 
 injectSecretToEnv('db_username', 'DB_USERNAME')
